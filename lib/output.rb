@@ -612,11 +612,11 @@ class OutputMagicTreeXML < Output
       results.each do |plugin_name, plugin_results|
         unless plugin_results.empty?
           # Host IP
-          @host_ip = plugin_results.map { |x| x[:string] unless x[:string].nil? }.to_s if plugin_name =~ /^IP$/
+          @host_ip = plugin_results.map { |x| x[:string] unless x[:string].nil? }.first.to_s if plugin_name =~ /^IP$/
           # Host Country
           @host_country = plugin_results.map { |x| x[:string] unless x[:string].nil? }.to_s if plugin_name =~ /^Country$/
           # Host OS
-          @host_os << plugin_results.map { |x| x[:os] unless x[:os].class == Regexp }.to_s
+          @host_os << plugin_results.map { |x| x[:os] unless (x[:os].nil? or x[:os].class == Regexp)}.to_s
         end
       end
 
@@ -645,6 +645,7 @@ class OutputMagicTreeXML < Output
           certainty = plugin_results.map { |x| x[:certainty] unless x[:certainty].class == Regexp }.flatten.compact.sort.uniq.last
           versions = plugin_results.map { |x| x[:version] unless x[:version].class == Regexp }.flatten.compact.sort.uniq
           strings = plugin_results.map { |x| x[:string] unless x[:string].class == Regexp }.flatten.compact.sort.uniq
+          text = plugin_results.map { |x| x[:text] unless x[:tet].class == Regexp }.flatten.compact.sort.uniq
           models = plugin_results.map { |x| x[:model] unless x[:model].class == Regexp }.flatten.compact.sort.uniq
           firmwares = plugin_results.map { |x| x[:firmware] unless x[:firmware].class == Regexp }.flatten.compact.sort.uniq
           filepaths = plugin_results.map { |x| x[:filepath] unless x[:filepath].class == Regexp }.flatten.compact.sort.uniq
@@ -662,6 +663,10 @@ class OutputMagicTreeXML < Output
           # Strings
           if strings.size > 0
             strings.map { |x| @f.write escape(x).to_s } unless plugin_name =~ /^IP$/ or plugin_name =~ /^Country$/
+          end
+
+          if text.size > 0
+            text.map { |x| @f.write escape(x).to_s } unless plugin_name =~ /^IP$/ or plugin_name =~ /^Country$/
           end
 
           # Versions
